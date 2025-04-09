@@ -1,0 +1,50 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdkVersion 35
+    buildToolsVersion '35.0.0'
+    ndkVersion '25.0.8775105'
+    defaultConfig {
+        namespace = 'com.coara.proc'
+        minSdkVersion 24
+        targetSdkVersion 32
+        versionCode 1
+        versionName '1.0'
+        multiDexEnabled = true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+   buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    lint {
+        disable += ['ExpiredTargetSdkVersion', 'NewApi', 'Range', 'SetTextI18n', 'ScopedStorage', 'FieldCanBeLocal', 'GradleDependency']
+    }
+
+    buildFeatures {
+        viewBinding true
+        aidl true
+    }
+
+    externalNativeBuild {
+        ndkBuild.path 'src/main/jni/Android.mk'
+    }
+    sourceSets {
+        main {
+            aidl.srcDirs = ['src/main/aidl']
+        }
+    }
+
+    dependenciesInfo.includeInApk false
+}
