@@ -15,6 +15,7 @@ ProcInfo は、Android のシステム情報（/proc 以下の各種情報）を
 
 - **自己プロセスの詳細情報**  
   自身のプロセスに関する様々な統計や設定情報（Status、Maps、Mountinfo、Mounts、Mountstats、IO、Limits、OOM Score、OOM Adj など）を表示できます。
+  ※端末によっては見ることが出来ない場合があります。
 
 - **スケジューリング情報**  
   自プロセスのスケジューリング関連情報（Sched、Sched Boost、Sched Boost Period、Sched Group ID、Initial Task Load、Wake Up Idle、Schedstat、Smap）を確認できます。
