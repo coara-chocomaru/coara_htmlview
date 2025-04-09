@@ -23,7 +23,6 @@ public class ProcInfoService extends Service {
             return ProcInfoNative.getProcMemInfo();
         }
         
-        // /proc/self の各種情報
         @Override
         public String getProcSelfStatus() throws RemoteException {
             return ProcInfoNative.getProcSelfStatus();
