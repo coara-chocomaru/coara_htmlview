@@ -1,6 +1,10 @@
 ## 基本的なライセンス情報
 このアプリ(com.coara.proc)は 
+
+ 
 Android Native Development Kit (NDK)及び 
+  
+
 Android Software Development Kit (SDK) を使用して開発されています。  
 Development KitはGoogle LLCによって提供されており  
 オープンソースのApache License 2.0のもとで利用可能です。
