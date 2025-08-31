@@ -34,16 +34,10 @@ android {
 
     buildFeatures {
         viewBinding true
-        aidl true
     }
 
     externalNativeBuild {
         ndkBuild.path 'src/main/jni/Android.mk'
-    }
-    sourceSets {
-        main {
-            aidl.srcDirs = ['src/main/aidl']
-        }
     }
     
 dependencies {
