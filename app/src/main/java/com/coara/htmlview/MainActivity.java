@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
                 editHistory.clear();
                 editHistory.push(htmlEditText.getText().toString());
                 lastUndoTimestamp = System.currentTimeMillis();
-                htmlEditText.setKeyListener(new EditText(htmlview.this).getKeyListener());
+                htmlEditText.setKeyListener(new EditText(MainActivity.this).getKeyListener());
                 htmlEditText.setFocusableInTouchMode(true);
                 isEditing = true;
                 Toast.makeText(MainActivity.this, "編集モードに入りました", Toast.LENGTH_SHORT).show();
@@ -213,8 +213,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         saveButton.setOnClickListener(v -> {
-            if (ContextCompat.checkSelfPermission(htmlview.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(htmlview.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION_WRITE);
+            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION_WRITE);
             } else {
                 saveHtmlToFile();
             }
