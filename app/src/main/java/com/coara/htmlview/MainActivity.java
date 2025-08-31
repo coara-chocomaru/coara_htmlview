@@ -124,9 +124,9 @@ public class MainActivity extends AppCompatActivity {
             if ((urlStr.startsWith("http://") || urlStr.startsWith("https://")) && !isLoading) {
                 fetchHtml(urlStr);
             } else if (isLoading) {
-                Toast.makeText(htmlview.this, "読み込み中です。", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "読み込み中です。", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(htmlview.this, "正しいURLを入力してください", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "正しいURLを入力してください", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                 htmlEditText.setKeyListener(new EditText(htmlview.this).getKeyListener());
                 htmlEditText.setFocusableInTouchMode(true);
                 isEditing = true;
-                Toast.makeText(htmlview.this, "編集モードに入りました", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "編集モードに入りました", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -204,11 +204,11 @@ public class MainActivity extends AppCompatActivity {
                         int pos = Math.min(previousText.length(), curPos);
                         htmlEditText.setSelection(pos);
                         isUpdating = false;
-                        Toast.makeText(htmlview.this, "変更を元に戻しました", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "変更を元に戻しました", Toast.LENGTH_SHORT).show();
                     });
                 });
             } else if (isEditing && !isUpdating) {
-                Toast.makeText(htmlview.this, "これ以上前はありません", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "これ以上前はありません", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -370,7 +370,7 @@ public class MainActivity extends AppCompatActivity {
                 });
             } catch (final Exception e) {
                 uiHandler.post(() -> {
-                    Toast.makeText(htmlview.this, "HTMLの取得に失敗しました: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "HTMLの取得に失敗しました: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     isLoading = false;
                 });
             }
@@ -423,7 +423,7 @@ public class MainActivity extends AppCompatActivity {
                 });
             } catch (final Exception e) {
                 uiHandler.post(() -> {
-                    Toast.makeText(htmlview.this, "HTMLファイルの読み込みに失敗しました: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "HTMLファイルの読み込みに失敗しました: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     isLoading = false;
                 });
             }
@@ -484,9 +484,9 @@ public class MainActivity extends AppCompatActivity {
                     bos.write(currentText.getBytes(StandardCharsets.UTF_8));
                     bos.flush();
                 }
-                uiHandler.post(() -> Toast.makeText(htmlview.this, "保存しました: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show());
+                uiHandler.post(() -> Toast.makeText(MainActivity.this, "保存しました: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show());
             } catch (final Exception e) {
-                uiHandler.post(() -> Toast.makeText(htmlview.this, "保存に失敗しました: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                uiHandler.post(() -> Toast.makeText(MainActivity.this, "保存に失敗しました: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             }
         });
     }
