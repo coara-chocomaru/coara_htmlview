@@ -1,25 +1,32 @@
-plugins {
+plugins { 
     id 'com.android.application'
 }
 
 android {
-    compileSdk 35 
-    buildToolsVersion '35.0.0'
-    ndkVersion '25.0.8775105'
-    namespace = 'com.coara.htmlview'
+    compileSdk = 35 
+    namespace = 'com.coara.browser'
 
     defaultConfig {
-        applicationId 'com.coara.htmlview' 
-        minSdk 24 
-        targetSdk 32 
-        versionCode 1
-        versionName '1.0'
-        multiDexEnabled true
+        minSdk = 24
+        targetSdk = 30
+        versionCode = 15
+        versionName = "1.0"
+        multiDexEnabled = true
+        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_21
         targetCompatibility JavaVersion.VERSION_21
+    }
+    
+    signingConfigs {
+        release {
+            storeFile file('test.jks')
+            storePassword 'test1234'
+            keyAlias 'key0'
+            keyPassword 'test1234'
+        }
     }
 
     buildTypes {
@@ -27,23 +34,26 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            signingConfig signingConfigs.debug
+            minifyEnabled true
+            shrinkResources true
+            debuggable false
+            signingConfig signingConfigs.release
         }
     }
+         buildFeatures {
+             viewBinding true
+     }
 
     lint {
-        disable 'ExpiredTargetSdkVersion', 'NewApi', 'Range', 'SetTextI18n', 'ScopedStorage', 'FieldCanBeLocal', 'GradleDependency'
+        disable += ['ExpiredTargetSdkVersion', 'NewApi', 'Range', 'SetTextI18n', 'ScopedStorage', 'FieldCanBeLocal', 'GradleDependency']
     }
+    packagingOptions {
+        excludes += "DebugProbesKt.bin"
+    }
+}
 
-    buildFeatures {
-        viewBinding true
-    }
-
-    externalNativeBuild {
-        ndkBuild {
-            path 'src/main/jni/Android.mk'
-        }
-    }
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ["-Xlint:deprecation", "-Xlint:unchecked"]
 }
 
 dependencies {
