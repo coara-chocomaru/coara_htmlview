@@ -21,15 +21,12 @@ import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.coara.htmlview.databinding.HtmlviewBinding;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.coara.htmlview.databinding.ActivityHtmlviewBinding;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -47,18 +44,20 @@ import java.util.Locale;
 import java.util.Stack;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int TAG_COLOR = 0xFF0000FF; 
-    private static final int ATTRIBUTE_COLOR = 0xFF008000;
-    private static final int VALUE_COLOR = 0xFFB22222;
+    private static final int TAG_COLOR = 0xFF0000FF;       // 青
+    private static final int ATTRIBUTE_COLOR = 0xFF008000; // 緑
+    private static final int VALUE_COLOR = 0xFFB22222;     // 赤
 
     private static final int LARGE_TEXT_THRESHOLD = 700;
     private static final int REQUEST_PERMISSION_WRITE = 100;
+    private static final int REQUEST_CODE_PICK_HTML = 101;
 
-    private HtmlviewBinding binding;
+    private ActivityHtmlviewBinding binding;
 
     private String originalHtml = "";
     private final Stack<String> editHistory = new Stack<>();
@@ -69,8 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private static final long UNDO_THRESHOLD = 1000;
 
     private static final Pattern TAG_PATTERN = Pattern.compile("<[^>]+>");
-    private static final Pattern ATTR_PATTERN = Pattern.compile("([a-zA-Z0-9-]+)=\\\"([^\\\"]*)\\\"");
-
+    private static final Pattern ATTR_PATTERN = Pattern.compile("(\\w+)=\\\"([^\\\"]*)\\\"");
     private final ArrayList<Integer> searchMatchPositions = new ArrayList<>();
     private int currentSearchIndex = -1;
 
@@ -79,41 +77,16 @@ public class MainActivity extends AppCompatActivity {
 
     private Runnable highlightRunnable;
 
-
-    private ActivityResultLauncher<Intent> pickHtmlLauncher;
-
-    static {
-    
-        System.loadLibrary("highlighter");
-    }
-
-    private native int[][] getHighlightSpansNative(String text);
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        
-        binding = HtmlviewBinding.inflate(getLayoutInflater());
+        binding = ActivityHtmlviewBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-    
         binding.htmlEditText.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         binding.htmlEditText.setMovementMethod(new ScrollingMovementMethod());
-        binding.htmlEditText.setKeyListener(null); 
+        binding.htmlEditText.setKeyListener(null);
 
-        
-        pickHtmlLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                        Uri uri = result.getData().getData();
-                        if (uri != null) readHtmlFromUri(uri);
-                    }
-                }
-        );
-
-        
         binding.loadButton.setOnClickListener(v -> {
             String urlStr = binding.urlInput.getText().toString().trim();
             if ((urlStr.startsWith("http://") || urlStr.startsWith("https://")) && !isLoading) {
@@ -125,47 +98,38 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        
         binding.loadFromStorageButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("text/html");
             intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("text/*"); 
-            pickHtmlLauncher.launch(Intent.createChooser(intent, "HTMLファイルを選択"));
+            startActivityForResult(Intent.createChooser(intent, "HTMLファイルを選択"), REQUEST_CODE_PICK_HTML);
         });
 
-        
         binding.editButton.setOnClickListener(v -> {
             if (!isEditing) {
                 editHistory.clear();
                 editHistory.push(binding.htmlEditText.getText().toString());
                 lastUndoTimestamp = System.currentTimeMillis();
-            
-                binding.htmlEditText.setKeyListener(new android.text.method.TextKeyListener(android.text.method.TextKeyListener.Capitalize.NONE, false));
+                binding.htmlEditText.setKeyListener(new android.widget.EditText(MainActivity.this).getKeyListener());
                 binding.htmlEditText.setFocusableInTouchMode(true);
-                binding.htmlEditText.requestFocus();
                 isEditing = true;
                 Toast.makeText(MainActivity.this, "編集モードに入りました", Toast.LENGTH_SHORT).show();
-                binding.editButton.setText("完了");
-            } else {
-            
-                binding.htmlEditText.setKeyListener(null);
-                binding.htmlEditText.clearFocus();
-                isEditing = false;
-                binding.editButton.setText("編集");
-                Toast.makeText(MainActivity.this, "編集を終了しました", Toast.LENGTH_SHORT).show();
             }
         });
 
-        
         binding.htmlEditText.addTextChangedListener(new TextWatcher() {
             private String beforeChange;
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                if (!isUpdating && isEditing) beforeChange = s.toString();
+                if (!isUpdating && isEditing) {
+                    beforeChange = s.toString();
+                }
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (highlightRunnable != null) uiHandler.removeCallbacks(highlightRunnable);
+                if (highlightRunnable != null) {
+                    uiHandler.removeCallbacks(highlightRunnable);
+                }
             }
             @Override
             public void afterTextChanged(final Editable s) {
@@ -173,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
                     final String newText = s.toString();
                     long now = System.currentTimeMillis();
                     if (now - lastUndoTimestamp > UNDO_THRESHOLD) {
-                        editHistory.push(beforeChange != null ? beforeChange : "");
+                        editHistory.push(beforeChange);
                         lastUndoTimestamp = now;
                     }
                     highlightRunnable = () -> {
@@ -194,7 +158,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        
         binding.revertFab.setOnClickListener(v -> {
             if (isEditing && !isUpdating && !editHistory.isEmpty()) {
                 final String previousText = editHistory.pop();
@@ -217,33 +180,31 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-    
         binding.saveButton.setOnClickListener(v -> {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION_WRITE);
-                    return;
-                }
+            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION_WRITE);
+            } else {
+                saveHtmlToFile();
             }
-            saveHtmlToFile();
         });
 
-        
         binding.searchButton.setOnClickListener(v -> showSearchOverlay());
 
-        
         binding.searchQueryEditText.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { performSearch(s.toString()); }
-            @Override public void afterTextChanged(Editable s) {}
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                performSearch(s.toString());
+            }
+            @Override
+            public void afterTextChanged(Editable s) {}
         });
 
-    
         binding.searchNextButton.setOnClickListener(v -> moveToNextSearchMatch());
         binding.searchPrevButton.setOnClickListener(v -> moveToPreviousSearchMatch());
         binding.closeSearchButton.setOnClickListener(v -> hideSearchOverlay());
 
-    
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             binding.htmlEditText.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
                 if (!isUpdating && binding.htmlEditText.getText().length() > LARGE_TEXT_THRESHOLD) {
@@ -257,7 +218,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    
     private void showSearchOverlay() {
         binding.searchOverlay.setVisibility(View.VISIBLE);
         binding.searchButton.setVisibility(View.INVISIBLE);
@@ -273,7 +233,9 @@ public class MainActivity extends AppCompatActivity {
         binding.searchButton.setVisibility(View.VISIBLE);
         Editable text = binding.htmlEditText.getText();
         Object[] bgSpans = text.getSpans(0, text.length(), BackgroundColorSpan.class);
-        for (Object span : bgSpans) text.removeSpan(span);
+        for (Object span : bgSpans) {
+            text.removeSpan(span);
+        }
     }
 
     private void performSearch(final String query) {
@@ -281,10 +243,10 @@ public class MainActivity extends AppCompatActivity {
             searchMatchPositions.clear();
             if (query != null && !query.isEmpty()) {
                 String text = binding.htmlEditText.getText().toString();
-                int index = 0;
-                while ((index = text.indexOf(query, index)) >= 0) {
+                int index = text.indexOf(query, 0);
+                while (index >= 0) {
                     searchMatchPositions.add(index);
-                    index += query.length();
+                    index = text.indexOf(query, index + query.length());
                 }
             }
             final int count = searchMatchPositions.size();
@@ -293,12 +255,6 @@ public class MainActivity extends AppCompatActivity {
                 if (count > 0) {
                     currentSearchIndex = 0;
                     highlightCurrentSearchMatch();
-                } else {
-                
-                    Editable txt = binding.htmlEditText.getText();
-                    Object[] bg = txt.getSpans(0, txt.length(), BackgroundColorSpan.class);
-                    for (Object s : bg) txt.removeSpan(s);
-                    binding.htmlEditText.setSelection(0);
                 }
             });
         });
@@ -307,8 +263,9 @@ public class MainActivity extends AppCompatActivity {
     private void highlightCurrentSearchMatch() {
         Editable text = binding.htmlEditText.getText();
         Object[] bgSpans = text.getSpans(0, text.length(), BackgroundColorSpan.class);
-        for (Object span : bgSpans) text.removeSpan(span);
-
+        for (Object span : bgSpans) {
+            text.removeSpan(span);
+        }
         if (currentSearchIndex >= 0 && currentSearchIndex < searchMatchPositions.size()) {
             final int start = searchMatchPositions.get(currentSearchIndex);
             int end = start + binding.searchQueryEditText.getText().length();
@@ -345,11 +302,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    
     private void fetchHtml(final String urlString) {
         isLoading = true;
         executor.execute(() -> {
-            final StringBuilder result = new StringBuilder();
+            final StringBuilder result = new StringBuilder(8192); // Initial capacity to reduce reallocations
             try {
                 URL url = new URL(urlString);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -358,18 +314,19 @@ public class MainActivity extends AppCompatActivity {
                 connection.setRequestMethod("GET");
                 connection.setConnectTimeout(10000);
                 connection.setReadTimeout(10000);
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        result.append(line).append('\n');
-                    }
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    result.append(line).append('\n');
                 }
+                reader.close();
                 uiHandler.post(() -> {
                     originalHtml = result.toString();
                     isEditing = false;
                     editHistory.clear();
-                    binding.htmlEditText.setText(originalHtml);
-                
+                    Editable editable = binding.htmlEditText.getText();
+                    editable.clear();
+                    editable.append(originalHtml);
                     executor.execute(() -> {
                         final int[][] spans = getHighlightSpans(originalHtml);
                         uiHandler.post(() -> {
@@ -388,24 +345,41 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_PICK_HTML && resultCode == Activity.RESULT_OK && data != null) {
+            Uri uri = data.getData();
+            if (uri != null) {
+                readHtmlFromUri(uri);
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
     private void readHtmlFromUri(final Uri uri) {
         isLoading = true;
         executor.execute(() -> {
-            final StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder(8192); // Initial capacity to reduce reallocations
             try {
                 ContentResolver resolver = getContentResolver();
                 try (InputStream in = resolver.openInputStream(uri)) {
-                    if (in == null) throw new Exception("InputStreamが取得できません");
+                    if (in == null) {
+                        throw new Exception("InputStreamが取得できません");
+                    }
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
                         String line;
-                        while ((line = reader.readLine()) != null) sb.append(line).append('\n');
+                        while ((line = reader.readLine()) != null) {
+                            sb.append(line).append('\n');
+                        }
                     }
                 }
                 uiHandler.post(() -> {
                     originalHtml = sb.toString();
                     isEditing = false;
                     editHistory.clear();
-                    binding.htmlEditText.setText(originalHtml);
+                    Editable editable = binding.htmlEditText.getText();
+                    editable.clear();
+                    editable.append(originalHtml);
                     executor.execute(() -> {
                         final int[][] spans = getHighlightSpans(originalHtml);
                         uiHandler.post(() -> {
@@ -424,33 +398,45 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    
     private int[][] getHighlightSpans(String text) {
+        ArrayList<int[]> spansList = new ArrayList<>();
         boolean isLargeText = text.length() > LARGE_TEXT_THRESHOLD && binding.htmlEditText.getLayout() != null;
         int visibleStart = 0;
         int visibleEnd = text.length();
-        String subText = text;
         if (isLargeText) {
             int firstVisibleLine = binding.htmlEditText.getLayout().getLineForVertical(binding.htmlEditText.getScrollY());
             int lastVisibleLine = binding.htmlEditText.getLayout().getLineForVertical(binding.htmlEditText.getScrollY() + binding.htmlEditText.getHeight());
             visibleStart = binding.htmlEditText.getLayout().getLineStart(firstVisibleLine);
             visibleEnd = binding.htmlEditText.getLayout().getLineEnd(lastVisibleLine);
-            subText = text.substring(Math.max(0, visibleStart), Math.min(text.length(), visibleEnd));
+            text = text.substring(Math.max(0, visibleStart), Math.min(text.length(), visibleEnd));
         }
-        int[][] nativeSpans = getHighlightSpansNative(subText);
-        if (isLargeText && nativeSpans != null) {
-            for (int[] span : nativeSpans) {
-                span[0] += visibleStart;
-                span[1] += visibleStart;
+        Matcher tagMatcher = TAG_PATTERN.matcher(text);
+        while (tagMatcher.find()) {
+            int tagStart = (isLargeText ? visibleStart : 0) + tagMatcher.start();
+            int tagEnd = (isLargeText ? visibleStart : 0) + tagMatcher.end();
+            spansList.add(new int[]{tagStart, tagEnd, TAG_COLOR});
+            String tagText = text.substring(tagMatcher.start(), tagMatcher.end());
+            Matcher attrMatcher = ATTR_PATTERN.matcher(tagText);
+            while (attrMatcher.find()) {
+                int attrNameStart = tagStart + attrMatcher.start(1);
+                int attrNameEnd = tagStart + attrMatcher.end(1);
+                spansList.add(new int[]{attrNameStart, attrNameEnd, ATTRIBUTE_COLOR});
+                int attrValueStart = tagStart + attrMatcher.start(2);
+                int attrValueEnd = tagStart + attrMatcher.end(2);
+                spansList.add(new int[]{attrValueStart, attrValueEnd, VALUE_COLOR});
             }
         }
-        return nativeSpans;
+        int[][] result = new int[spansList.size()][3];
+        spansList.toArray(result);
+        return result;
     }
 
     private void applyHighlight(Editable editable, int[][] spans) {
         if (spans != null) {
             Object[] oldSpans = editable.getSpans(0, editable.length(), ForegroundColorSpan.class);
-            for (Object span : oldSpans) editable.removeSpan(span);
+            for (Object span : oldSpans) {
+                editable.removeSpan(span);
+            }
             int length = editable.length();
             for (int[] span : spans) {
                 int start = span[0];
@@ -463,32 +449,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     private void saveHtmlToFile() {
         final String currentText = binding.htmlEditText.getText().toString();
         final String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         final String fileName = timeStamp + (!currentText.equals(originalHtml) ? "Edit.html" : ".html");
-
         executor.execute(() -> {
             try {
-                File file;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    
-                    File downloadDir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
-                    if (downloadDir != null && !downloadDir.exists()) downloadDir.mkdirs();
-                    file = new File(downloadDir, fileName);
-                } else {
-                
-                    File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                    if (!downloadDir.exists()) downloadDir.mkdirs();
-                    file = new File(downloadDir, fileName);
-                }
+                File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                File file = new File(downloadDir, fileName);
                 try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file))) {
                     bos.write(currentText.getBytes(StandardCharsets.UTF_8));
                     bos.flush();
                 }
-                final String path = file.getAbsolutePath();
-                uiHandler.post(() -> Toast.makeText(MainActivity.this, "保存しました: " + path, Toast.LENGTH_LONG).show());
+                uiHandler.post(() -> Toast.makeText(MainActivity.this, "保存しました: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show());
             } catch (final Exception e) {
                 uiHandler.post(() -> Toast.makeText(MainActivity.this, "保存に失敗しました: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             }
@@ -502,12 +475,5 @@ public class MainActivity extends AppCompatActivity {
         } else if (requestCode == REQUEST_PERMISSION_WRITE) {
             Toast.makeText(this, "書き込み権限が必要です", Toast.LENGTH_SHORT).show();
         }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        executor.shutdownNow();
     }
 }
