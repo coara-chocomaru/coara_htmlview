@@ -1,24 +1,27 @@
 plugins {
     id 'com.android.application'
 }
+
 android {
-    compileSdkVersion 35
+    compileSdk 35 
     buildToolsVersion '35.0.0'
     ndkVersion '25.0.8775105'
+
     defaultConfig {
-        namespace = 'com.coara.htmlview'
-        minSdkVersion 24
-        targetSdkVersion 32
+        applicationId 'com.coara.htmlview' 
+        minSdk 24 
+        targetSdk 32 
         versionCode 1
         versionName '1.0'
-        multiDexEnabled = true
+        multiDexEnabled true
     }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_21
         targetCompatibility JavaVersion.VERSION_21
     }
-   buildTypes {
+
+    buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
@@ -28,7 +31,7 @@ android {
     }
 
     lint {
-        disable += ['ExpiredTargetSdkVersion', 'NewApi', 'Range', 'SetTextI18n', 'ScopedStorage', 'FieldCanBeLocal', 'GradleDependency']
+        disable 'ExpiredTargetSdkVersion', 'NewApi', 'Range', 'SetTextI18n', 'ScopedStorage', 'FieldCanBeLocal', 'GradleDependency'
     }
 
     buildFeatures {
@@ -36,10 +39,13 @@ android {
     }
 
     externalNativeBuild {
-        ndkBuild.path 'src/main/jni/Android.mk'
+        ndkBuild {
+            path 'src/main/jni/Android.mk'
+        }
     }
+}
 
- dependencies { 
+dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.core:core:1.12.0'
