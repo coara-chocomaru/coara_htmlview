@@ -6,6 +6,7 @@ android {
     compileSdk 35 
     buildToolsVersion '35.0.0'
     ndkVersion '25.0.8775105'
+    namespace = 'com.coara.htmlview'
 
     defaultConfig {
         applicationId 'com.coara.htmlview' 
