@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
     static {
     
-        System.loadLibrary("htmlhighlighter");
+        System.loadLibrary("highlighter");
     }
 
     private native int[][] getHighlightSpansNative(String text);
