@@ -49,9 +49,9 @@ import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int TAG_COLOR = 0xFF0000FF;       // 青
-    private static final int ATTRIBUTE_COLOR = 0xFF008000; // 緑
-    private static final int VALUE_COLOR = 0xFFB22222;     // 赤
+    private static final int TAG_COLOR = 0xFF0000FF;  
+    private static final int ATTRIBUTE_COLOR = 0xFF008000; 
+    private static final int VALUE_COLOR = 0xFFB22222; 
 
     private static final int LARGE_TEXT_THRESHOLD = 700;
     private static final int REQUEST_PERMISSION_WRITE = 100;
@@ -305,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
     private void fetchHtml(final String urlString) {
         isLoading = true;
         executor.execute(() -> {
-            final StringBuilder result = new StringBuilder(8192); // Initial capacity to reduce reallocations
+            final StringBuilder result = new StringBuilder(8192); 
             try {
                 URL url = new URL(urlString);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -359,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
     private void readHtmlFromUri(final Uri uri) {
         isLoading = true;
         executor.execute(() -> {
-            final StringBuilder sb = new StringBuilder(8192); // Initial capacity to reduce reallocations
+            final StringBuilder sb = new StringBuilder(8192); 
             try {
                 ContentResolver resolver = getContentResolver();
                 try (InputStream in = resolver.openInputStream(uri)) {
