@@ -1,5 +1,5 @@
 ## 基本的なライセンス情報
-このアプリ(com.coara.expdbExtractor)は以下のライブラリを使用しています。すべてのライブラリはApache License 2.0のもとで提供されています。
+このアプリ(com.coara.htmlview)は以下のライブラリを使用しています。すべてのライブラリはApache License 2.0のもとで提供されています。
 
 ### 使用ライブラリ
 - **androidx.appcompat:appcompat:1.7.0**  
