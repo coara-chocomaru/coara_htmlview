@@ -4,7 +4,7 @@ pluginManagement {
         mavenCentral()
     }
     plugins {
-        id  'com.android.application'version '8.9.1' apply false
+        id  'com.android.application'version '8.12.0' apply false
     }
 }
 dependencyResolutionManagement {
@@ -14,4 +14,4 @@ dependencyResolutionManagement {
     }
 }
 include 'app'
-rootProject.name = "procinfo"
+rootProject.name = "htmlview"
