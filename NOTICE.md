@@ -1,5 +1,5 @@
 ## 基本的なライセンス情報
-このアプリ(com.coara.proc)は 
+このアプリ(com.coara.expdbExtractor)は 
 
  
 Android Native Development Kit (NDK)及び 
