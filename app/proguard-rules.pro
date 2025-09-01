@@ -2,7 +2,7 @@
 -keep interface android.** { *; }
 -dontwarn java.lang.**
 -dontusemixedcaseclassnames
--keep class com.coara.browser.MainActivity {
+-keep class com.coara.htmlview.MainActivity {
     public static void main(java.lang.String[]);
 }
 -keepattributes *Annotation*
