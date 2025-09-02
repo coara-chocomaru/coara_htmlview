@@ -12,6 +12,7 @@
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
+        android:largeHeap="true"
         android:label="Coara htmlview"
         android:supportsRtl="true"
         android:theme="@style/Theme.MaterialComponents.Light.NoActionBar">
