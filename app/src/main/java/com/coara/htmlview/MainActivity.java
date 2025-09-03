@@ -15,7 +15,6 @@ import android.os.Looper;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.TextWatcher;
-import android.text.method.ScrollingMovementMethod;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
@@ -84,8 +83,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         binding.htmlEditText.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        binding.htmlEditText.setMovementMethod(new ScrollingMovementMethod());
-        binding.htmlEditText.setTextIsSelectable(true);
+        binding.htmlEditText.setTextIsSelectable(true); // 追加: テキスト選択を有効化（長押しでコピー&ペースト可能に）
         binding.htmlEditText.setKeyListener(null);
 
         binding.loadButton.setOnClickListener(v -> {
@@ -114,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 binding.htmlEditText.setKeyListener(new android.widget.EditText(MainActivity.this).getKeyListener());
                 binding.htmlEditText.setFocusableInTouchMode(true);
                 binding.htmlEditText.setTextIsSelectable(true);
+                binding.htmlEditText.setCursorVisible(true);
                 isEditing = true;
                 Toast.makeText(MainActivity.this, "編集モードに入りました", Toast.LENGTH_SHORT).show();
             }
@@ -335,6 +334,7 @@ public class MainActivity extends AppCompatActivity {
                         uiHandler.post(() -> {
                             applyHighlight(binding.htmlEditText.getText(), spans);
                             binding.htmlEditText.setKeyListener(null);
+                            binding.htmlEditText.setCursorVisible(false);
                             isLoading = false;
                         });
                     });
@@ -388,6 +388,7 @@ public class MainActivity extends AppCompatActivity {
                         uiHandler.post(() -> {
                             applyHighlight(binding.htmlEditText.getText(), spans);
                             binding.htmlEditText.setKeyListener(null);
+                            binding.htmlEditText.setCursorVisible(false);
                             isLoading = false;
                         });
                     });
