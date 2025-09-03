@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
                 lastUndoTimestamp = System.currentTimeMillis();
                 binding.htmlEditText.setKeyListener(new android.widget.EditText(MainActivity.this).getKeyListener());
                 binding.htmlEditText.setFocusableInTouchMode(true);
+                binding.htmlEditText.setTextIsSelectable(true);
                 isEditing = true;
                 Toast.makeText(MainActivity.this, "編集モードに入りました", Toast.LENGTH_SHORT).show();
             }
@@ -207,6 +208,7 @@ public class MainActivity extends AppCompatActivity {
         binding.closeSearchButton.setOnClickListener(v -> hideSearchOverlay());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            binding.htmlEditText.setTextIsSelectable(true);
             binding.htmlEditText.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
                 if (!isUpdating && binding.htmlEditText.getText().length() > LARGE_TEXT_THRESHOLD) {
                     final String currentText = binding.htmlEditText.getText().toString();
