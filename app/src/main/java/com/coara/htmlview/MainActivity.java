@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
         binding.htmlEditText.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         binding.htmlEditText.setMovementMethod(new ScrollingMovementMethod());
-        binding.htmlEditText.setTextIsSelectable(true); // 追加: テキスト選択を有効化（長押しでコピー&ペースト可能に）
+        binding.htmlEditText.setTextIsSelectable(true);
         binding.htmlEditText.setKeyListener(null);
 
         binding.loadButton.setOnClickListener(v -> {
