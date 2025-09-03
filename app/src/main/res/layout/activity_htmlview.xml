@@ -141,6 +141,7 @@
             android:inputType="textMultiLine|textNoSuggestions"
             android:textIsSelectable="true"
             android:focusable="true"
+            android:focusableInTouchMode="true"
             android:gravity="top|start"
             android:padding="8dp"
             android:longClickable="true" />
