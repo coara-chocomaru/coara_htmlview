@@ -22,7 +22,9 @@
             android:inputType="textUri"
             android:singleLine="true"
             android:imeOptions="actionGo"
-            android:minWidth="200dp" />
+            android:minWidth="200dp"
+            android:textIsSelectable="true"
+            android:longClickable="true" />
 
         <Button
            android:id="@+id/loadButton"
@@ -70,7 +72,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#00FFFF"
-            android:hint="検索語を入力" />
+            android:hint="検索語を入力"
+            android:textIsSelectable="true"
+            android:longClickable="true" />
 
         <Button
             android:id="@+id/searchPrevButton"
@@ -99,7 +103,8 @@
             android:layout_alignParentEnd="true"
             android:layout_below="@id/searchQueryEditText"
             android:layout_marginTop="8dp"
-            android:textIsSelectable="true"/>
+            android:textIsSelectable="true"
+            android:longClickable="true"/>
 
         <Button
             android:id="@+id/closeSearchButton"
@@ -137,7 +142,8 @@
             android:textIsSelectable="true"
             android:focusable="true"
             android:gravity="top|start"
-            android:padding="8dp" />
+            android:padding="8dp"
+            android:longClickable="true" />
     </ScrollView>
 
     
