@@ -153,6 +153,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
+        android:textIsSelectable="true"
         android:padding="8dp"
         android:gravity="center">
 
